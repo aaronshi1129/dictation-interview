@@ -1,0 +1,457 @@
+
+<html><head><base href=".">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background: white;
+    padding: 20px;
+  }
+
+  .container {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    max-width: 800px;
+    width: 90%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    text-align: center;
+  }
+
+  .sentence {
+    font-size: 1.2rem;
+    margin: 20px 0;
+    line-height: 1.6;
+    color: #2c3e50;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin: 5px;
+  }
+
+  button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+
+  .number {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .input-area {
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  #userInput {
+    width: 90%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    margin: 10px 0;
+  }
+
+  .feedback {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    font-weight: bold;
+    min-height: 24px;
+  }
+
+  .correct {
+    color: #27ae60;
+  }
+
+  .incorrect {
+    color: #e74c3c;
+  }
+
+  .disclaimer {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  .score-display {
+    font-size: 1.1rem;
+    color: #34495e;
+    margin: 10px 0;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  #correctScore {
+    color: #27ae60;
+    font-weight: bold;
+  }
+
+  #percentageScore {
+    color: #2980b9;
+    font-weight: bold;
+  }
+
+  .answer-display {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    color: #2c3e50;
+    display: none;
+  }
+
+  .answer-display.show {
+    display: block;
+  }
+
+  .pokemon-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .pokemon-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: modalPop 0.3s ease-out;
+  }
+
+  @keyframes modalPop {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .pokemon-image {
+    margin: 20px 0;
+    max-width: 200px;
+    height: auto;
+    animation: bounce 1s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .continue-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s, background 0.2s;
+    margin-top: 20px;
+  }
+
+  .continue-btn:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Listening Dictation (Proverbs)</h1>
+    <p class="subtitle">Finish 5 tasks correctly and earn a Pokemon!</p>
+  <div class="score-display">
+    Score: <span id="correctScore">0</span> correct / <span id="totalAttempts">0</span> attempts 
+    (<span id="percentageScore">0</span>%)
+  </div>
+  <div class="button-group">
+    <button onclick="speakSentence()">
+      <span>🔊 Read Aloud</span>
+    </button>
+  </div>
+  <div class="input-area">
+    <input type="text" 
+           id="userInput" 
+           placeholder="Type what you hear..."
+           onkeypress="if(event.key === 'Enter') checkAnswer()">
+  </div>
+  <div id="feedback" class="feedback"></div>
+  <div id="answerDisplay" class="answer-display"></div>
+  <div class="button-group">
+    <button onclick="generateSentence()">Get New Sentence</button>
+    <button onclick="checkAnswer()">Check Answer</button>
+    <button onclick="showAnswer()">Show Answer</button>
+  </div>
+  <p class="disclaimer">
+    The sentences do not represent statistical facts. They are only used to practice English listening, writing, and numbers.
+  </p>
+  <p class="disclaimer" style="margin-bottom: 0; font-style: normal;">
+    Author: Aaron Shi. Released in 2024. Last update on November 23, 2024
+  </p>
+</div>
+
+<script>
+const POKEMON_COUNT = 151; // Number of original Pokemon
+let fiveCorrectCounter = 0; // Track progress towards 5 correct answers
+const templates = [
+  "Can you tell me a little about yourself?",
+  "What do you think are your greatest strengths?",
+  "Why are you interested in this position?",
+  "Can you describe a time when you had to overcome a challenge at work?",
+  "How do you handle stress in the workplace?",
+  "What are your salary expectations for this role?",
+  "How do you prioritize tasks when handling multiple deadlines?",
+  "Can you give an example of how you work in a team?",
+  "What made you decide to apply for this job?",
+  "What do you know about our company?",
+  "Can you explain your experience with this type of project?",
+  "Why did you leave your last job?",
+  "How do you handle conflicts with coworkers?",
+  "Can you describe a situation where you showed leadership skills?",
+  "What are your long-term career goals?",
+  "What type of work environment do you thrive in?",
+  "Can you share a time when you solved a problem at work?",
+  "What is your approach to time management?",
+  "What are your weaknesses, and how are you working to improve them?",
+  "How do you stay organized in a fast-paced environment?",
+  "What attracted you to this industry?",
+  "Do you have any questions for me about the company or the role?",
+  "I’m looking forward to working together. How has your day been so far?",
+  "I’ll be handling this project with you. Let’s discuss the timeline.",
+  "Let’s collaborate on this task and get it done as efficiently as possible.",
+  "I think you did a great job on the presentation, keep it up!",
+  "How are you managing your workload lately? Do you need any help?",
+  "Let’s have a meeting to discuss the upcoming deadlines.",
+  "I’d like to hear your thoughts on this project before we move forward.",
+  "Can you please clarify that point during the next team meeting?",
+  "How would you approach this task if you were in charge?",
+  "I appreciate your feedback on this project. Let’s make the necessary adjustments.",
+  "I have some updates on the current project that I’d like to share with you.",
+  "Let me know if you need assistance with anything. I’m here to help.",
+  "I’d like to suggest a new strategy for handling this issue.",
+  "Could we schedule a one-on-one meeting to discuss your progress?",
+  "How do you feel about your current workload? Is it manageable?",
+  "I’ve noticed your hard work lately, and I really appreciate your dedication.",
+  "Please send me the latest report so I can review it.",
+  "Let’s take a moment to discuss your performance during the last quarter.",
+  "I’ll follow up with you after the meeting to see how things are going.",
+  "How are you finding the new team dynamics? Any suggestions?",
+  "I’d like to schedule a check-in with you about your current projects.",
+  "Do you have any concerns or feedback about the way we are working?",
+  "Can you update me on the status of the task we discussed earlier?",
+  "Let’s plan for a team meeting to ensure everyone is on the same page.",
+  "What are your thoughts on the current project timeline?",
+  "Can you please clarify what you mean by that so I can assist you better?",
+  "I think we need to adjust our approach to meet the new deadlines.",
+  "I’d like to schedule a meeting with you to discuss your career development.",
+  "It’s important to maintain open communication between all team members.",
+  "Let’s take a look at the progress so far and see if any adjustments are needed.",
+  "Can we review the task assignment so I can ensure everything is on track?",
+  "How are you finding the new workflow? Any improvements you’d recommend?",
+  "I’ve noticed you’ve been taking on more responsibilities. Keep up the great work!",
+  "Can you let me know if you need any resources or support to complete the project?"
+];
+
+let correctAnswers = 0;
+let totalAttempts = 0;
+
+let currentSentence = '';
+
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateSentence() {
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  let number;
+  
+  // Generate factually accurate random numbers within reasonable ranges
+  if (template.includes("social media")) {
+    number = getRandomNumber(120, 170);
+  } else if (template.includes("blinks")) {
+    number = getRandomNumber(25000, 30000);
+  } else if (template.includes("adult laughs")) {
+    number = getRandomNumber(15, 20);
+  } else if (template.includes("heart beats")) {
+    number = getRandomNumber(95000, 105000);
+  } else if (template.includes("emails")) {
+    number = getRandomNumber(100, 140);
+  } else if (template.includes("gallons of water")) {
+    number = getRandomNumber(300, 340);
+  } else if (template.includes("watching television")) {
+    number = getRandomNumber(180, 220);
+  } else if (template.includes("commuting")) {
+    number = getRandomNumber(45, 60);
+  } else if (template.includes("check their smartphones")) {
+    number = getRandomNumber(80, 110);
+  } else if (template.includes("calories")) {
+    number = getRandomNumber(2000, 3000);
+  } else if (template.includes("child laughs")) {
+    number = getRandomNumber(250, 350);
+  } else if (template.includes("steps")) {
+    number = getRandomNumber(7000, 8000);
+  } else {
+    // Default random number for other cases
+    number = getRandomNumber(10, 120);
+  }
+
+  currentSentence = template.replace("NUMBER", number);
+  
+  // Clear the input and feedback
+  document.getElementById("userInput").value = "";
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("answerDisplay").classList.remove("show");
+  
+  // Automatically speak the new sentence
+  speakSentence();
+}
+
+function speakSentence() {
+  if (!currentSentence) {
+    currentSentence = document.getElementById("sentenceDisplay").textContent;
+  }
+  
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(currentSentence);
+  
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+  
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    const englishVoice = voices.find(voice => voice.lang.startsWith('en-'));
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+  }
+  
+  window.speechSynthesis.speak(utterance);
+}
+
+function checkAnswer() {
+  const userInput = document.getElementById("userInput").value.trim().toLowerCase();
+  const correctAnswer = currentSentence.toLowerCase();
+  const feedbackElement = document.getElementById("feedback");
+  
+  totalAttempts++;
+  
+  if (userInput === correctAnswer) {
+    correctAnswers++;
+    fiveCorrectCounter++;
+    feedbackElement.textContent = "🎉 Excellent! That's correct!";
+    feedbackElement.className = "feedback correct";
+    
+    // Check if user has completed 5 correct answers
+    if (fiveCorrectCounter === 5) {
+      const randomPokemonId = Math.floor(Math.random() * POKEMON_COUNT) + 1;
+      showPokemonReward(randomPokemonId);
+      fiveCorrectCounter = 0; // Reset counter
+    }
+  } else {
+    feedbackElement.textContent = "Keep trying! Listen again and type what you hear.";
+    feedbackElement.className = "feedback incorrect";
+  }
+  
+  // Update score display
+  document.getElementById("correctScore").textContent = correctAnswers;
+  document.getElementById("totalAttempts").textContent = totalAttempts;
+  document.getElementById("percentageScore").textContent = 
+    Math.round((correctAnswers / totalAttempts) * 100);
+}
+
+function showAnswer() {
+  const answerDisplay = document.getElementById("answerDisplay");
+  answerDisplay.textContent = currentSentence;
+  answerDisplay.classList.add("show");
+  
+  // Hide the answer after 5 seconds
+  setTimeout(() => {
+    answerDisplay.classList.remove("show");
+  }, 5000);
+}
+
+function showPokemonReward(pokemonId) {
+  // Create and show modal
+  const modal = document.createElement('div');
+  modal.className = 'pokemon-modal';
+  modal.innerHTML = `
+    <div class="pokemon-modal-content">
+      <h2>Congratulations! 🎉</h2>
+      <p>You've successfully finished five listening dictation tasks. You've won this Pokemon!</p>
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png" 
+           alt="Pokemon reward" 
+           class="pokemon-image"
+           width="200" 
+           height="200">
+      <button onclick="closePokemonModal()" class="continue-btn">Continue Practicing</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closePokemonModal() {
+  const modal = document.querySelector('.pokemon-modal');
+  if (modal) {
+    modal.remove();
+    generateSentence(); // Generate new sentence after closing modal
+  }
+}
+
+speechSynthesis.onvoiceschanged = function() {
+  window.speechSynthesis.getVoices();
+};
+
+window.onload = generateSentence;
+</script>
+</body></html>
